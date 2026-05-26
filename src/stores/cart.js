@@ -4,16 +4,19 @@ import { getCart, addToCart, updateCart, removeFromCart, clearCart } from '@/api
 
 export const useCartStore = defineStore('cart', () => {
   const cartList = ref([])
-  const total = ref(0)
+  const totalQuantity = ref(0)
+  const totalAmount = ref(0)
   const loading = ref(false)
 
-  const cartCount = computed(() => cartList.value.reduce((sum, item) => sum + item.quantity, 0))
+  // 购物车商品总数（所有商品数量之和）
+  const cartCount = computed(() => cartList.value.reduce((sum, item) => sum + (item.quantity || 0), 0))
 
   const fetchCart = async (params = {}) => {
     loading.value = true
-    const res = await getCart(params)
-    cartList.value = res.list || []
-    total.value = res.total || 0
+    const res = await getCart(params)    // CartVO 字段：items / totalQuantity / totalAmount / totalSkuCount
+    cartList.value = res.items || []
+    totalQuantity.value = res.totalQuantity || 0
+    totalAmount.value = res.totalAmount || 0
     loading.value = false
   }
 
@@ -35,8 +38,20 @@ export const useCartStore = defineStore('cart', () => {
   const clearAll = async () => {
     await clearCart()
     cartList.value = []
-    total.value = 0
+    totalQuantity.value = 0
+    totalAmount.value = 0
   }
 
-  return { cartList, total, loading, cartCount, fetchCart, addItem, updateItem, removeItem, clearAll }
+  return {
+    cartList,
+    totalQuantity,
+    totalAmount,
+    loading,
+    cartCount,
+    fetchCart,
+    addItem,
+    updateItem,
+    removeItem,
+    clearAll
+  }
 })
