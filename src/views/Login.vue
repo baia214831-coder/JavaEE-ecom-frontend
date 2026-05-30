@@ -16,7 +16,6 @@
             </el-form-item>
           </el-form>
         </el-tab-pane>
-
         <el-tab-pane label="注册" name="register">
           <el-form :model="registerForm" label-width="0">
             <el-form-item>
@@ -61,6 +60,7 @@ const registerForm = ref({ username: '', password: '', confirmPassword: '', phon
 
 const handleLogin = async () => {
   try {
+    // res 是 LoginResultVO：{ userId, username, token, expireTime, role, avatar, loginTime }
     const res = await login(loginForm.value)
     userStore.setUserInfo(res)
     ElMessage.success('登录成功')

@@ -7,8 +7,7 @@
         <el-button type="primary" @click="loadData">查询</el-button>
         <el-button type="success" @click="openDialog()">新增商品</el-button>
       </div>
-
-      <el-table :data="tableData" border>
+      <el-table :data="tableData" border v-loading="loading">
         <el-table-column prop="id" label="ID" width="80" />
         <el-table-column prop="name" label="商品名称" />
         <el-table-column prop="category" label="分类" />
@@ -17,19 +16,11 @@
         <el-table-column label="操作" width="260">
           <template #default="{ row }">
             <el-button size="small" @click="openDialog(row)">编辑</el-button>
-            <el-button size="small" type="danger" @click="handleDelete(row.id)">删除</el-button>
-            <el-button
-              size="small"
-              type="warning"
-              @click="openCartDialog(row)"
-              :disabled="row.stock <= 0"
-            >
-              加入购物车
-            </el-button>
+            <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
+            <el-button size="small" type="warning" @click="openCartDialog(row)" :disabled="row.stock <= 0">加入购物车</el-button>
           </template>
         </el-table-column>
       </el-table>
-
       <el-pagination
         v-model:current-page="query.pageNum"
         v-model:page-size="query.pageSize"
@@ -81,20 +72,22 @@ import { addToCart } from '@/api/cart'
 import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
+const loading = ref(false)
 const query = ref({ pageNum: 1, pageSize: 10, name: '', category: '' })
 const tableData = ref([])
 const total = ref(0)
 const dialogVisible = ref(false)
 const form = ref({ id: null, name: '', category: '', price: 0, stock: 0, description: '' })
 
-// 购物车弹窗
 const cartDialogVisible = ref(false)
 const cartForm = ref({ productId: null, name: '', price: 0, stock: 0, quantity: 1 })
 
 const loadData = async () => {
+  loading.value = true
   const res = await getProductPage(query.value)
-  tableData.value = res.records
-  total.value = res.total
+  tableData.value = res.records || []
+  total.value = res.total || 0
+  loading.value = false
 }
 
 const openDialog = (row = null) => {
@@ -115,11 +108,43 @@ const submitForm = async () => {
   loadData()
 }
 
-const handleDelete = async (id) => {
-  await ElMessageBox.confirm('确认删除？', '提示', { type: 'warning' })
-  await deleteProduct(id)
-  ElMessage.success('删除成功')
-  loadData()
+// 实验三要求：敏感操作（删除）二次校验
+const handleDelete = async (row) => {
+  try {
+    // 第一步：确认删除
+    await ElMessageBox.confirm(
+      `确定删除商品 "${row.name}" 吗？删除后不可恢复！`,
+      '删除确认',
+      { type: 'warning', confirmButtonText: '确认删除' }
+    )
+
+    // 第二步：二次校验，输入登录密码确认
+    await ElMessageBox.prompt(
+      '请输入您的登录密码以确认此敏感操作',
+      '二次校验',
+      {
+        confirmButtonText: '确认删除',
+        cancelButtonText: '取消',
+        inputType: 'password',
+        inputValidator: (val) => {
+          if (!val) return '密码不能为空'
+          if (val.length < 3) return '密码长度不足'
+          return true
+        }
+      }
+    )
+
+    // 调用删除（如后端需要校验密码，可把输入的密码作为参数传入）
+    await deleteProduct(row.id)
+    ElMessage.success('删除成功')
+    loadData()
+  } catch (e) {
+    if (e === 'cancel' || e === 'close') {
+      // 用户取消，静默处理
+    } else {
+      console.error('删除失败', e)
+    }
+  }
 }
 
 const openCartDialog = (row) => {
@@ -138,16 +163,11 @@ const openCartDialog = (row) => {
 }
 
 const submitAddToCart = async () => {
-  const userId = userStore.userInfo?.id
-    || userStore.userInfo?.userId
-    || userStore.userInfo?.uid
-
+  const userId = userStore.userInfo?.userId || userStore.userInfo?.id
   if (!userId) {
     ElMessage.error('无法获取用户ID，请重新登录')
-    console.error('当前 userInfo:', userStore.userInfo)
     return
   }
-
   await addToCart({
     userId: userId,
     productId: cartForm.value.productId,
