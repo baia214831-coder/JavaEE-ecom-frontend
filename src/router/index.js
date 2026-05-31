@@ -69,29 +69,30 @@ const router = createRouter({
   routes
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to) => {
   const userStore = useUserStore()
 
-  // 1. 登录页放行（有token则跳首页）
+  if (to.path === '/403') return true
   if (to.path === '/login') {
-    if (userStore.token) return next('/')
-    return next()
+    if (userStore.token && userStore.role) return '/'
+    return true
   }
 
-  // 2. 未登录拦截
-  if (!userStore.token) {
-    return next('/login')
+  if (!userStore.token) return '/login'
+
+  //关键：role 为空说明登录数据不完整，强制重新登录
+  if (!userStore.role) {
+    userStore.clearUser()
+    return '/login'
   }
 
-  // 3. 角色权限校验
-  if (to.meta && to.meta.roles && to.meta.roles.length > 0) {
-    if (!to.meta.roles.includes(userStore.role)) {
-      return next('/403')
-    }
+  if (to.meta?.roles && !to.meta.roles.includes(userStore.role)) {
+    return '/403'
   }
 
-  next()
+  return true
 })
+
 
 export default router
 

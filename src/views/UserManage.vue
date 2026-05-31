@@ -11,21 +11,23 @@
         <el-table-column prop="username" label="用户名" />
         <el-table-column prop="phone" label="手机号" />
         <el-table-column prop="email" label="邮箱" />
-        <el-table-column prop="enabled" label="状态" width="90">
+        <<el-table-column label="状态" width="90">
+           <template #default="{ row }">
+             <el-tag :type="(row.enabled === false) ? 'danger' : 'success'">
+               {{ (row.enabled === false) ? '禁用' : '启用' }}
+             </el-tag>
+           </template>
+         </el-table-column>
+
+        <<el-table-column label="锁定" width="90">
           <template #default="{ row }">
-            <el-tag :type="row.enabled ? 'success' : 'danger'">
-              {{ row.enabled ? '启用' : '禁用' }}
+            <el-tag :type="(row.accountNonLocked === false) ? 'warning' : 'success'">
+              {{ (row.accountNonLocked === false) ? '已锁定' : '正常' }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="accountNonLocked" label="锁定" width="90">
-          <template #default="{ row }">
-            <el-tag :type="row.accountNonLocked ? 'success' : 'warning'">
-              {{ row.accountNonLocked ? '正常' : '已锁定' }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="failCount" label="失败次数" width="90" />
+
+        <<el-table-column prop="failCount" label="失败次数" width="90" />
         <el-table-column prop="lastLoginTime" label="最后登录" min-width="160" />
         <el-table-column label="操作" width="420" fixed="right">
           <template #default="{ row }">

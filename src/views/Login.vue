@@ -60,12 +60,17 @@ const registerForm = ref({ username: '', password: '', confirmPassword: '', phon
 
 const handleLogin = async () => {
   try {
-    // res 是 LoginResultVO：{ userId, username, token, expireTime, role, avatar, loginTime }
-    const res = await login(loginForm.value)
-    userStore.setUserInfo(res)
-    ElMessage.success('登录成功')
-    router.push('/')
-  } catch (e) {}
+      const res = await login(loginForm.value)
+      console.log('登录返回:', res)  // 🔴 看这行输出
+      userStore.setUserInfo(res)
+      console.log('存储后 userInfo:', userStore.userInfo)  // 🔴 看 role 有没有
+      console.log('存储后 role:', userStore.role)  // 🔴 看 role 是什么
+      ElMessage.success('登录成功')
+      router.push('/')
+      console.log('已执行 router.push')  // 🔴 看这行是否执行
+    } catch (e) {
+      console.error('登录失败', e)
+    }
 }
 
 const handleRegister = async () => {
