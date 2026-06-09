@@ -3,7 +3,6 @@ import { ElMessage } from 'element-plus'
 import { getToken, removeToken, removeUser } from './auth'
 
 // ==================== 业务服务：8081（商品/订单/购物车/用户/报表）====================
-// 无 Security 校验，不需要 Token
 const bizRequest = axios.create({
   baseURL: 'http://localhost:8081/api',
   timeout: 10000,
@@ -11,22 +10,33 @@ const bizRequest = axios.create({
 })
 
 // ==================== 管理服务：8082（登录/登出/刷新/权限）====================
-// 有完整 Security + JWT 校验，除登录外都需要 Token
 const adminRequest = axios.create({
   baseURL: 'http://localhost:8082/api',
   timeout: 10000,
   withCredentials: true
 })
 
-// 8082 的白名单：这些接口不需要 Token
+// 8082 的白名单
 const adminWhiteList = ['/auth/login', '/auth/register']
 
-// 只给 adminRequest 添加 Token 拦截器
+// 给 adminRequest 添加 Token 拦截器
 adminRequest.interceptors.request.use(
   (config) => {
     const token = getToken()
     const isWhite = adminWhiteList.some(url => config.url?.includes(url))
     if (token && !isWhite) {
+      config.headers.Authorization = 'Bearer ' + token
+    }
+    return config
+  },
+  (error) => Promise.reject(error)
+)
+
+// 给 bizRequest 也添加 Token 拦截器
+bizRequest.interceptors.request.use(
+  (config) => {
+    const token = getToken()
+    if (token) {
       config.headers.Authorization = 'Bearer ' + token
     }
     return config
