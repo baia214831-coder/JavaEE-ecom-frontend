@@ -140,7 +140,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useUserStore } from '@/stores/user'
-import request from '@/utils/request'
+import {adminRequest} from '@/utils/request'
 import { getUserPage, updateUser, getUserProfile, getUserOrders } from '@/api/user'
 
 const userStore = useUserStore()
@@ -204,7 +204,7 @@ const viewOrders = async (id) => {
 const handleLock = async (row) => {
   try {
     await ElMessageBox.confirm(`确定锁定用户 ${row.username} 的账户吗？`, '提示', { type: 'warning' })
-    await request.post(`/user/lock/${row.id}`)
+    await adminRequest.post(`/user/lock/${row.id}`)
     ElMessage.success('账户已锁定')
     loadData()
   } catch (e) {
@@ -216,7 +216,7 @@ const handleLock = async (row) => {
 const handleUnlock = async (row) => {
   try {
     await ElMessageBox.confirm(`确定解锁用户 ${row.username} 的账户吗？`, '提示', { type: 'warning' })
-    await request.post(`/user/unlock/${row.id}`)
+    await adminRequest.post(`/user/unlock/${row.id}`)
     ElMessage.success('账户已解锁')
     loadData()
   } catch (e) {
@@ -233,7 +233,7 @@ const handleResetPwd = async (row) => {
       inputPattern: /^.{6,20}$/,
       inputErrorMessage: '密码长度应为6-20位'
     })
-    await request.post('/user/resetPassword', {
+    await adminRequest.post('/user/resetPassword', {
       userId: row.id,
       newPassword: value
     })
@@ -246,7 +246,7 @@ const handleResetPwd = async (row) => {
 // 查看登录日志
 const viewLogs = async (id) => {
   try {
-    const res = await request.get(`/user/loginLogs/${id}`)
+    const res = await adminRequest.get(`/user/loginLogs/${id}`)
     loginLogs.value = res || []
     logsVisible.value = true
   } catch (e) {

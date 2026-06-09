@@ -26,7 +26,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
-import request from '@/utils/request'
+import { adminRequest} from '@/utils/request'
 
 const userStore = useUserStore()
 const loading = ref(false)

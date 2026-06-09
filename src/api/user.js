@@ -1,7 +1,7 @@
-import request from '@/utils/request'
+import { bizRequest } from '@/utils/request'
 
-export const getUserPage = (params) => request.get('/users/page', { params })
-export const updateUser = (id, data) => request.put(`/users/${id}`, data)
-export const getUserProfile = (id) => request.get(`/users/${id}/profile`)
-export const getUserOrders = (id) => request.get(`/users/${id}/orders`)
-export const register = (data) => request.post('/users/register', data)
+export const getUserPage = (params) => bizRequest.get('/users/page', { params })
+export const updateUser = (id, data) => bizRequest.put(`/users/${id}`, data)
+export const getUserProfile = (id) => bizRequest.get(`/users/${id}/profile`)
+export const getUserOrders = (id) => bizRequest.get(`/users/${id}/orders`)
+export const register = (data) => bizRequest.post('/users/register', data)

@@ -56,7 +56,7 @@ import { computed } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import request from '@/utils/request'
+import {adminRequest} from '@/utils/request'
 
 const userStore = useUserStore()
 const router = useRouter()
@@ -82,12 +82,10 @@ const goPassword = () => {
 
 const logout = async () => {
   try {
-    // 必须调用后端，删除 Redis 中的 Token
-    await request.post('/auth/logout')
+    await adminRequest.post('/auth/logout')
   } catch (e) {
     console.error('登出接口调用失败', e)
   } finally {
-    // 无论后端是否成功，前端必须清本地缓存
     userStore.clearUser()
     window.location.href = '/login'
   }

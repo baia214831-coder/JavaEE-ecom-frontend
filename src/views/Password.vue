@@ -30,7 +30,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
-import request from '@/utils/request'
+import {adminRequest} from '@/utils/request'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -58,7 +58,7 @@ const handleSubmit = async () => {
   }
 
   try {
-    await request.post('/user/password', {
+    await adminRequest.post('/user/password', {
       userId: userId,
       oldPassword: form.value.oldPassword,
       newPassword: form.value.newPassword
